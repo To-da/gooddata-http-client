@@ -79,8 +79,8 @@ public class GoodDataHttpClient implements HttpClient {
     public static final String COOKIE_GDC_AUTH_TT = "cookie=GDCAuthTT";
     public static final String COOKIE_GDC_AUTH_SST = "cookie=GDCAuthSST";
 
-    static final String SST_HEADER = "X-GDC-AuthSST";
-    static final String TT_HEADER = "X-GDC-AuthTT";
+    private static final String SST_HEADER = "X-GDC-AuthSST";
+    private static final String TT_HEADER = "X-GDC-AuthTT";
 
     private enum GoodDataChallengeType {
         SST, TT, UNKNOWN
@@ -183,9 +183,7 @@ public class GoodDataHttpClient implements HttpClient {
         }
         EntityUtils.consume(originalResponse.getEntity());
 
-        final boolean entered = authLock.tryLock();
-
-        if (entered) {
+        if (authLock.tryLock()) {
             try {
                 //only one thread requiring authentication will get here.
                 final Lock writeLock = rwLock.writeLock();
@@ -228,10 +226,10 @@ public class GoodDataHttpClient implements HttpClient {
     private boolean refreshTt() throws IOException {
         log.debug("Obtaining TT");
 
-        final HttpGet getTT = new HttpGet(TOKEN_URL);
-        getTT.addHeader(SST_HEADER, sst);
+        final HttpGet request = new HttpGet(TOKEN_URL);
+        request.addHeader(SST_HEADER, sst);
         try {
-            final HttpResponse response = httpClient.execute(authHost, getTT, (HttpContext) null);
+            final HttpResponse response = httpClient.execute(authHost, request, (HttpContext) null);
             final int status = response.getStatusLine().getStatusCode();
             switch (status) {
                 case HttpStatus.SC_OK:
@@ -244,7 +242,7 @@ public class GoodDataHttpClient implements HttpClient {
                     throw new GoodDataAuthException("Unable to obtain TT, HTTP status: " + status);
             }
         } finally {
-            getTT.releaseConnection();
+            request.releaseConnection();
         }
     }
 

@@ -33,6 +33,7 @@ public class GoodDataHttpClientIntegrationTest {
     public static final String GDC_LOGIN_URL = "/gdc/account/login";
     public static final String GDC_PROJECTS_URL = "/gdc/projects";
     public static final String REDIRECT_URL = "/redirect/to/projects";
+    private static final String SST_HEADER = "X-GDC-AuthSST";
 
     private final String login = System.getProperty("GDC_LOGIN");
     private final String password = System.getProperty("GDC_PASSWORD");
@@ -125,7 +126,7 @@ public class GoodDataHttpClientIntegrationTest {
         onRequest()
                 .havingMethodEqualTo("GET")
                 .havingURIEqualTo(GDC_TOKEN_URL)
-                .havingHeaderEqualTo(GoodDataHttpClient.SST_HEADER, "cookieSst")
+                .havingHeaderEqualTo(SST_HEADER, "cookieSst")
         .respond()
                 .withStatus(200)
                 .withBody("{ \"userToken\" : { \"token\" : \"cookieTt\" } }")
@@ -194,7 +195,7 @@ public class GoodDataHttpClientIntegrationTest {
         onRequest()
                 .havingMethodEqualTo("GET")
                 .havingURIEqualTo(GDC_TOKEN_URL)
-                .havingHeaderEqualTo(GoodDataHttpClient.SST_HEADER, "cookieSst")
+                .havingHeaderEqualTo(SST_HEADER, "cookieSst")
         .respond()
                 .withStatus(200)
                 .withBody("{ \"userToken\" : { \"token\" : \"cookieTt\" } }")
