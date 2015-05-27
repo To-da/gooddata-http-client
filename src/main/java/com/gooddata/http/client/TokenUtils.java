@@ -22,27 +22,33 @@ class TokenUtils {
     private static final String ANY_NAMED_VALUES = "(?:\\s*\"\\w+\"\\s*\\:\\s*\"[\\w/]+\"\\s*,?\\s*)*";
     private static final String TOKEN = "\\s*\"token\"\\s*\\:\\s*\"(\\S+?)\"\\s*,?\\s*";
 
+    private static final Pattern SST_PATTERN = Pattern.compile("\\s*\\{\\s*\"" + SST_ENTITY + "\"\\s*\\:\\s*\\{" + ANY_NAMED_VALUES + TOKEN + ANY_NAMED_VALUES + "\\}\\s*\\}\\s*");
+    private static final Pattern TT_PATTERN  = Pattern.compile("\\s*\\{\\s*\"" + TT_ENTITY  + "\"\\s*\\:\\s*\\{" + ANY_NAMED_VALUES + TOKEN + ANY_NAMED_VALUES + "\\}\\s*\\}\\s*");
+
     private TokenUtils() { }
 
-    static String extractTokenFromBody(final HttpResponse response, final String entityName) throws IOException {
+    private static String extractTokenFromBody(final HttpResponse response, final Pattern pattern) throws IOException {
         final String responseBody = response.getEntity() == null ? "" : EntityUtils.toString(response.getEntity());
-        return extractTokenFromBody(responseBody, entityName);
+        return extractTokenFromBody(responseBody, pattern);
     }
 
-    static String extractTokenFromBody(final String responseBody, final String entityName) throws IOException {
-        final Pattern pattern = Pattern.compile("\\s*\\{\\s*\"" + entityName + "\"\\s*\\:\\s*\\{" + ANY_NAMED_VALUES + TOKEN + ANY_NAMED_VALUES + "\\}\\s*\\}\\s*");
+    private static String extractTokenFromBody(final String responseBody, final Pattern pattern) throws IOException {
         final Matcher matcher = pattern.matcher(responseBody);
         if (!matcher.matches()) {
             throw new GoodDataAuthException("Unable to login. Malformed response body: " + responseBody);
         }
-        return matcher.group(1);
+        final String token = matcher.group(1);
+        if (token == null) {
+            throw new GoodDataAuthException("Unable to login. Malformed response body: " + responseBody);
+        }
+        return token;
     }
 
     static String extractSST(final HttpResponse response) throws IOException {
-        return extractTokenFromBody(response, SST_ENTITY);
+        return extractTokenFromBody(response, SST_PATTERN);
     }
 
     static String extractTT(final HttpResponse response) throws IOException {
-        return extractTokenFromBody(response, TT_ENTITY);
+        return extractTokenFromBody(response, TT_PATTERN);
     }
 }

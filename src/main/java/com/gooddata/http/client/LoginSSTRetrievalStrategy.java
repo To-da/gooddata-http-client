@@ -82,11 +82,8 @@ public class LoginSSTRetrievalStrategy implements SSTRetrievalStrategy {
             if (status != HttpStatus.SC_OK) {
                 throw new GoodDataAuthException("Unable to login: " + status);
             }
-            final String sst = TokenUtils.extractSST(response);
-            if (sst == null) {
-                throw new GoodDataAuthException("Unable to login. Missing SST Set-Cookie header.");
-            }
-            return sst;
+
+            return TokenUtils.extractSST(response);
         } finally {
             postLogin.releaseConnection();
         }
